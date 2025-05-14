@@ -1,0 +1,9 @@
+[submodule "non_linear_solve/espresso-logic"]
+	path = non_linear_solve/espresso-logic
+	url = https://github.com/classabbyamp/espresso-logic.git
+[submodule "non_linear_solve/synth"]
+	path = non_linear_solve/synth
+	url = https://github.com/shack/synth.git
+[submodule "repfinder/libsais"]
+	path = repfinder/libsais
+	url = https://github.com/IlyaGrebnov/libsais.git

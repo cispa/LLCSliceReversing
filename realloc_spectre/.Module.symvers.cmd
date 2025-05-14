@@ -1,0 +1,1 @@
+savedcmd_/home/lorenz/Schreibtisch/testeroni/poc-boot/poc/Module.symvers :=  scripts/mod/modpost -M -m -a      -o /home/lorenz/Schreibtisch/testeroni/poc-boot/poc/Module.symvers -T /home/lorenz/Schreibtisch/testeroni/poc-boot/poc/modules.order -i Module.symvers -e 

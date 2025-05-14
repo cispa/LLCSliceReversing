@@ -1,0 +1,8 @@
+slice
+magic
+slice_data.txt
+oracle_data.txt
+*.o
+build/
+.cache/
+compile_commands.json

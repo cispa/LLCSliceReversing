@@ -1,0 +1,8 @@
+slice
+magic
+drama
+slice_data.txt
+oracle_data.txt
+*.o
+.cache/
+build/
