@@ -38,14 +38,7 @@ The implemented options are:
 4. privileged: check consecutive, but don't use Oracle at all (just directly translate virt to phys)
 5. [very fast, use for debugging] privileged, don't use Oracle at all, just directly translate virt to phys, don't even check if consecutive
 
-### Expected output (1, fully unprivileged config)
-
-```
-$ python eval.py 1000
-TODO
-```
-
-### Expected output (5, debug config)
+### Expected output
 
 ```
 $ sudo python eval.py 1000
