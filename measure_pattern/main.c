@@ -139,8 +139,9 @@ size_t find_slice_perf(void *address, int repeat, int *slice_count,
   REP16(x)                                                                     \
   REP16(x)                                                                     \
   REP16(x)                                                                     \
+  REP16(x)                                                                     \
   REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x)      \
-      REP16(x) REP16(x) REP16(x)
+      REP16(x) REP16(x)
 #define REP1K(x) REP256(x) REP256(x) REP256(x) REP256(x)
 #define REP4K(x) REP1K(x) REP1K(x) REP1K(x) REP1K(x)
 
@@ -237,8 +238,9 @@ size_t measure_slice_perf(void *address, int slices, unsigned long config,
   REP16(x)                                                                     \
   REP16(x)                                                                     \
   REP16(x)                                                                     \
+  REP16(x)                                                                     \
   REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x) REP16(x)      \
-      REP16(x) REP16(x) REP16(x)
+      REP16(x) REP16(x)
 #define REP1K(x) REP256(x) REP256(x) REP256(x) REP256(x)
 #define REP4K(x) REP1K(x) REP1K(x) REP1K(x) REP1K(x)
 

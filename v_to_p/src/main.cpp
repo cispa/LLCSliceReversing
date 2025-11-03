@@ -4,10 +4,10 @@
 #include <sys/mman.h> // mmap
 #include <unistd.h>
 
-#include "utils.h"
-#include "translation-oracle.hpp"
-#include "pretty-print.hpp"
 #include "core-config.hpp"
+#include "pretty-print.hpp"
+#include "translation-oracle.hpp"
+#include "utils.h"
 
 /**
  * Tests if two virtual addresses are physically consecutive

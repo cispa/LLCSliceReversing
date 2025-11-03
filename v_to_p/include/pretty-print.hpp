@@ -1,8 +1,8 @@
 #ifndef _PRETTY_PRINT_H_
 #define _PRETTY_PRINT_H_
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <string>
 
 #define RESET "\033[0m"
@@ -23,42 +23,36 @@
 #define TWIDTH 70
 #define PBWIDTH TWIDTH - 9
 
-static void printProgress(int percentage)
-{
-    int bar_width = TWIDTH - 9;
-    int val = percentage;
-    int lpad = (percentage * bar_width) / 100;
-    int rpad = bar_width - lpad;
-    std::cout << "\r";
-    if (percentage == 100)
-    {
-        std::cout << TAG_OK;
-    }
-    else
-    {
-        std::cout << TAG_PROGRESS;
-    }
-    std::cout << ORANGE << std::setw(3) << std::setfill(' ') << std::right << val << "%" << RESET << " [";
-    std::cout << GREEN << std::string(lpad, '|') << std::string(rpad, ' ') << RESET << "] ";
-    if (percentage == 100)
-    {
-        std::cout << std::endl;
-    }
-    else
-    {
-        std::cout.flush();
-    }
+static void printProgress(int percentage) {
+  int bar_width = TWIDTH - 9;
+  int val = percentage;
+  int lpad = (percentage * bar_width) / 100;
+  int rpad = bar_width - lpad;
+  std::cout << "\r";
+  if (percentage == 100) {
+    std::cout << TAG_OK;
+  } else {
+    std::cout << TAG_PROGRESS;
+  }
+  std::cout << ORANGE << std::setw(3) << std::setfill(' ') << std::right << val
+            << "%" << RESET << " [";
+  std::cout << GREEN << std::string(lpad, '|') << std::string(rpad, ' ')
+            << RESET << "] ";
+  if (percentage == 100) {
+    std::cout << std::endl;
+  } else {
+    std::cout.flush();
+  }
 }
 
-static void center_print(const std::string &text)
-{
-    int pad = (TWIDTH - text.length()) / 2;
-    std::cout << std::string(pad, '=') << " " << text << " " << std::string(pad, '=');
-    if (text.length() % 2 != 0)
-    {
-        std::cout << '=';
-    }
-    std::cout << std::endl;
+static void center_print(const std::string &text) {
+  int pad = (TWIDTH - text.length()) / 2;
+  std::cout << std::string(pad, '=') << " " << text << " "
+            << std::string(pad, '=');
+  if (text.length() % 2 != 0) {
+    std::cout << '=';
+  }
+  std::cout << std::endl;
 }
 
 #endif

@@ -2,35 +2,35 @@
 #define _CACHEUTILS_H_
 
 #include <assert.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/syscall.h>
-#include <linux/perf_event.h>
-#include <sys/ioctl.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <signal.h>
-#include <setjmp.h>
 #include <fcntl.h>
+#include <linux/perf_event.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #define RDPRU ".byte 0x0f, 0x01, 0xfd"
-#define RDPRU_ECX_MPERF	0
-#define RDPRU_ECX_APERF	1
+#define RDPRU_ECX_MPERF 0
+#define RDPRU_ECX_APERF 1
 
-#define ARM_PERF            1
+#define ARM_PERF 1
 #define ARM_CLOCK_MONOTONIC 2
-#define ARM_TIMER           3
+#define ARM_TIMER 3
 
 /* ============================================================
  *                    User configuration
  * ============================================================ */
 size_t CACHE_MISS = 0;
 
-#define USE_RDTSC_BEGIN_END     0
+#define USE_RDTSC_BEGIN_END 0
 
-#define USE_RDTSCP              1
+#define USE_RDTSCP 1
 
-#define ARM_CLOCK_SOURCE        ARM_CLOCK_MONOTONIC
+#define ARM_CLOCK_SOURCE ARM_CLOCK_MONOTONIC
 
 /* ============================================================
  *                  User configuration End
@@ -59,7 +59,7 @@ uint64_t rdtsc() {
   uint64_t a, d;
   asm volatile("mfence");
 #if USE_RDTSCP
-  asm volatile("rdtscp" : "=a"(a), "=d"(d) :: "rcx");
+  asm volatile("rdtscp" : "=a"(a), "=d"(d)::"rcx");
 #else
   asm volatile("rdtsc" : "=a"(a), "=d"(d));
 #endif
@@ -71,16 +71,16 @@ uint64_t rdtsc() {
 // ---------------------------------------------------------------------------
 uint64_t __rdtsc_begin() {
   uint64_t a, d;
-  asm volatile ("mfence\n\t"
-    "CPUID\n\t"
-    "RDTSCP\n\t"
-    "mov %%rdx, %0\n\t"
-    "mov %%rax, %1\n\t"
-    "mfence\n\t"
-    : "=r" (d), "=r" (a)
-    :
-    : "%rax", "%rbx", "%rcx", "%rdx");
-  a = (d<<32) | a;
+  asm volatile("mfence\n\t"
+               "CPUID\n\t"
+               "RDTSCP\n\t"
+               "mov %%rdx, %0\n\t"
+               "mov %%rax, %1\n\t"
+               "mfence\n\t"
+               : "=r"(d), "=r"(a)
+               :
+               : "%rax", "%rbx", "%rcx", "%rdx");
+  a = (d << 32) | a;
   return a;
 }
 
@@ -88,15 +88,15 @@ uint64_t __rdtsc_begin() {
 uint64_t __rdtsc_end() {
   uint64_t a, d;
   asm volatile("mfence\n\t"
-    "RDTSCP\n\t"
-    "mov %%rdx, %0\n\t"
-    "mov %%rax, %1\n\t"
-    "CPUID\n\t"
-    "mfence\n\t"
-    : "=r" (d), "=r" (a)
-    :
-    : "%rax", "%rbx", "%rcx", "%rdx");
-  a = (d<<32) | a;
+               "RDTSCP\n\t"
+               "mov %%rdx, %0\n\t"
+               "mov %%rax, %1\n\t"
+               "CPUID\n\t"
+               "mfence\n\t"
+               : "=r"(d), "=r"(a)
+               :
+               : "%rax", "%rbx", "%rcx", "%rdx");
+  a = (d << 32) | a;
   return a;
 }
 
@@ -106,7 +106,9 @@ void flush(void *p) { asm volatile("clflush 0(%0)\n" : : "c"(p) : "rax"); }
 // ---------------------------------------------------------------------------
 void maccess(void *p) { asm volatile("movq (%0), %%rax\n" : : "c"(p) : "rax"); }
 
-void maccess_wr(void *p, int val) { asm volatile("movq %%rax, (%1)\n" : : "a"(val), "c"(p) : ); }
+void maccess_wr(void *p, int val) {
+  asm volatile("movq %%rax, (%1)\n" : : "a"(val), "c"(p) :);
+}
 
 // ---------------------------------------------------------------------------
 void mfence() { asm volatile("mfence"); }
@@ -114,25 +116,31 @@ void mfence() { asm volatile("mfence"); }
 // ---------------------------------------------------------------------------
 void nospec() { asm volatile("lfence"); }
 
-#define speculation_start(label) asm goto ("call %l0" : : : : label##_retp); 
-#define speculation_end(label) asm goto("jmp %l0" : : : : label); label##_retp: asm goto("lea %l0(%%rip), %%rax\nmovq %%rax, (%%rsp)\nret\n" : : : "rax" : label); label: asm volatile("nop");
+#define speculation_start(label) asm goto("call %l0" : : : : label##_retp);
+#define speculation_end(label)                                                 \
+  asm goto("jmp %l0" : : : : label);                                           \
+  label##_retp : asm goto("lea %l0(%%rip), %%rax\nmovq %%rax, "                \
+                          "(%%rsp)\nret\n" : : : "rax" : label);               \
+  label:                                                                       \
+  asm volatile("nop");
 
 // example usage: asm volatile(INTELASM("clflush [rax]\n\t"));
-#define INTELASM(code) ".intel_syntax noprefix\n\t" code "\n\t.att_syntax prefix\n"
-
+#define INTELASM(code)                                                         \
+  ".intel_syntax noprefix\n\t" code "\n\t.att_syntax prefix\n"
 
 #include <cpuid.h>
 // ---------------------------------------------------------------------------
 unsigned int xbegin() {
   unsigned status;
-  asm volatile(".byte 0xc7,0xf8,0x00,0x00,0x00,0x00" : "=a"(status) : "a"(-1UL) : "memory");
+  asm volatile(".byte 0xc7,0xf8,0x00,0x00,0x00,0x00"
+               : "=a"(status)
+               : "a"(-1UL)
+               : "memory");
   return status;
 }
 
 // ---------------------------------------------------------------------------
-void xend() {
-  asm volatile(".byte 0x0f; .byte 0x01; .byte 0xd5" ::: "memory");
-}
+void xend() { asm volatile(".byte 0x0f; .byte 0x01; .byte 0xd5" ::: "memory"); }
 
 // ---------------------------------------------------------------------------
 int has_tsx() {
@@ -146,11 +154,11 @@ int has_tsx() {
 }
 
 // ---------------------------------------------------------------------------
-void maccess_tsx(void* ptr) {
-    if (xbegin() == (~0u)) {
-        maccess(ptr);
-        xend();
-    }
+void maccess_tsx(void *ptr) {
+  if (xbegin() == (~0u)) {
+    maccess(ptr);
+    xend();
+  }
 }
 
 #elif defined(__aarch64__)
@@ -166,7 +174,7 @@ uint64_t rdtsc() {
   asm volatile("DSB SY");
   asm volatile("ISB");
 
-  if (read(perf_fd, &result, sizeof(result)) < (ssize_t) sizeof(result)) {
+  if (read(perf_fd, &result, sizeof(result)) < (ssize_t)sizeof(result)) {
     return 0;
   }
 
@@ -205,7 +213,7 @@ uint64_t __rdtsc_begin() {
   asm volatile("DSB SY");
   asm volatile("ISB");
 
-  if (read(perf_fd, &result, sizeof(result)) < (ssize_t) sizeof(result)) {
+  if (read(perf_fd, &result, sizeof(result)) < (ssize_t)sizeof(result)) {
     return 0;
   }
 
@@ -234,7 +242,6 @@ uint64_t __rdtsc_begin() {
 #endif
 }
 
-
 // ---------------------------------------------------------------------------
 uint64_t __rdtsc_end() {
 #if ARM_CLOCK_SOURCE == ARM_PERF
@@ -242,7 +249,7 @@ uint64_t __rdtsc_end() {
 
   asm volatile("DSB SY");
 
-  if (read(perf_fd, &result, sizeof(result)) < (ssize_t) sizeof(result)) {
+  if (read(perf_fd, &result, sizeof(result)) < (ssize_t)sizeof(result)) {
     return 0;
   }
 
@@ -293,51 +300,49 @@ void mfence() { asm volatile("DSB ISH"); }
 // ---------------------------------------------------------------------------
 void nospec() { asm volatile("DSB SY\nISB"); }
 
-
 #elif defined(__riscv)
 
 static inline uint64_t rdtsc() {
   uint64_t val;
   asm volatile("fence rw,rw" : : : "memory");
-  asm volatile ("rdcycle %0" : "=r"(val));
+  asm volatile("rdcycle %0" : "=r"(val));
   asm volatile("fence rw,rw" : : : "memory");
   return val;
 }
 
-//Implementation just for legacy 
-// ---------------------------------------------------------------------------
-static inline uint64_t __rdtsc_begin() {
-  return rdtsc();
+// Implementation just for legacy
+//  ---------------------------------------------------------------------------
+static inline uint64_t __rdtsc_begin() { return rdtsc(); }
+
+// Implementation just for legacy
+//  ---------------------------------------------------------------------------
+static inline uint64_t __rdtsc_end() { return rdtsc(); }
+
+// dcache flush according to:
+// https://wiki.attacking.systems/en/compiler/unknown-instructions
+//  ---------------------------------------------------------------------------
+static inline void flush(void *addr) {
+  asm volatile("xor a7, a7, a7\n"
+               "add a7, a7, %0\n"
+               ".long 0x278800b" // DCACHE.CIVA a7
+               :
+               : "r"(addr)
+               : "a7", "memory");
 }
 
-//Implementation just for legacy 
-// ---------------------------------------------------------------------------
-static inline uint64_t __rdtsc_end() {
-  return rdtsc(); 
+// dereference memory address at adddr and load double word
+//  ---------------------------------------------------------------------------
+static inline void maccess(void *addr) {
+  asm volatile("ld a7, (%0)" : : "r"(addr) : "a7", "memory");
 }
 
-//dcache flush according to: https://wiki.attacking.systems/en/compiler/unknown-instructions
-// ---------------------------------------------------------------------------
-static inline void flush(void* addr) {
-    asm volatile("xor a7, a7, a7\n"
-                 "add a7, a7, %0\n"
-                 ".long 0x278800b" // DCACHE.CIVA a7
-                 : : "r"(addr) : "a7","memory"); 
-}
+// all loads and writes finish before continue
+//  ---------------------------------------------------------------------------
+static inline void mfence() { asm volatile("fence rw,rw" : : : "memory"); }
 
-//dereference memory address at adddr and load double word 
-// ---------------------------------------------------------------------------
-static inline void maccess(void* addr) {
-    asm volatile("ld a7, (%0)" : : "r"(addr) : "a7","memory");
-}
-
-//all loads and writes finish before continue
-// ---------------------------------------------------------------------------
-static inline void mfence() {asm volatile("fence rw,rw" : : : "memory");} 
-
-//all loads finish before continue
-// ---------------------------------------------------------------------------
-static inline void nospec() {asm volatile("fence r,rw" : : : "memory");} 
+// all loads finish before continue
+//  ---------------------------------------------------------------------------
+static inline void nospec() { asm volatile("fence r,rw" : : : "memory"); }
 
 #endif
 
@@ -411,7 +416,6 @@ int reload_t(void *ptr) {
   return (int)(end - start);
 }
 
-
 // ---------------------------------------------------------------------------
 size_t detect_flush_reload_threshold() {
   size_t reload_time = 0, flush_reload_time = 0, i, count = 1000000;
@@ -432,20 +436,20 @@ size_t detect_flush_reload_threshold() {
 }
 
 // ---------------------------------------------------------------------------
-void maccess_speculative(void* ptr) {
-    int i;
-    size_t dummy = 0;
-    void* addr;
+void maccess_speculative(void *ptr) {
+  int i;
+  size_t dummy = 0;
+  void *addr;
 
-    for(i = 0; i < 50; i++) {
-        size_t c = ((i * 167) + 13) & 1;
-        addr = (void*)(((size_t)&dummy) * c + ((size_t)ptr) * (1 - c));
-        flush(&c);
-        mfence();
-        if(c / 0.5 > 1.1) maccess(addr);
-    }
+  for (i = 0; i < 50; i++) {
+    size_t c = ((i * 167) + 13) & 1;
+    addr = (void *)(((size_t)&dummy) * c + ((size_t)ptr) * (1 - c));
+    flush(&c);
+    mfence();
+    if (c / 0.5 > 1.1)
+      maccess(addr);
+  }
 }
-
 
 // ---------------------------------------------------------------------------
 static jmp_buf trycatch_buf;
@@ -469,44 +473,44 @@ void trycatch_segfault_handler(int signum) {
 // ---------------------------------------------------------------------------
 int try_start() {
 #if defined(__i386__) || defined(__x86_64__)
-    if(has_tsx()) {
-        unsigned status;
-        // tsx begin
-        asm volatile(".byte 0xc7,0xf8,0x00,0x00,0x00,0x00"
+  if (has_tsx()) {
+    unsigned status;
+    // tsx begin
+    asm volatile(".byte 0xc7,0xf8,0x00,0x00,0x00,0x00"
                  : "=a"(status)
                  : "a"(-1UL)
                  : "memory");
-        return status == (~0u);
-    } else 
+    return status == (~0u);
+  } else
 #endif
-    {
-        signal(SIGSEGV, trycatch_segfault_handler); 
-        signal(SIGFPE, trycatch_segfault_handler); 
-        return !setjmp(trycatch_buf);
-    }
+  {
+    signal(SIGSEGV, trycatch_segfault_handler);
+    signal(SIGFPE, trycatch_segfault_handler);
+    return !setjmp(trycatch_buf);
+  }
 }
 
 // ---------------------------------------------------------------------------
 void try_end() {
 #if defined(__i386__) || defined(__x86_64__)
-    if(!has_tsx()) 
+  if (!has_tsx())
 #endif
-    {
-        signal(SIGSEGV, SIG_DFL);
-        signal(SIGFPE, SIG_DFL);
-    }
+  {
+    signal(SIGSEGV, SIG_DFL);
+    signal(SIGFPE, SIG_DFL);
+  }
 }
 
 // ---------------------------------------------------------------------------
 void try_abort() {
 #if defined(__i386__) || defined(__x86_64__)
-    if(has_tsx()) {
-        asm volatile(".byte 0x0f; .byte 0x01; .byte 0xd5" ::: "memory");
-    } else 
+  if (has_tsx()) {
+    asm volatile(".byte 0x0f; .byte 0x01; .byte 0xd5" ::: "memory");
+  } else
 #endif
-    {
-        maccess(0);
-    }
+  {
+    maccess(0);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -516,26 +520,30 @@ uint64_t get_frame_number_from_pme(uint64_t pme) {
 }
 
 size_t get_physical_address(size_t vaddr) {
-    int fd = open("/proc/self/pagemap", O_RDONLY);
-    if (fd == -1) {
-        perror("get_physical_address: Could not open /proc/self/pagemap. Are you missing permissions?");
-        exit(1);
-    }
-    uint64_t virtual_addr = (uint64_t)vaddr;
-    size_t pme = 0;
-    off_t offset = (virtual_addr / 4096) * sizeof(pme);
-    int got = pread(fd, &pme, sizeof(pme), offset);
-    uint64_t pfn = get_frame_number_from_pme(pme);
-    if (got != sizeof(pme) || pfn == 0) {
-        printf("get_physical_address:\n");
-        printf("Got physical frame number %ld while translating virtual address 0x%lx. Got %d bytes from reading /proc/self/pagemap.\n", pfn, virtual_addr, got);
-        printf("You probably don't have permissions to read /proc/self/pagemap. Try using sudo/root.\n");
-        exit(1);
-    }
-    // The page should be present
-    assert(pme & (1ULL << 63));
-    close(fd);
-    return (pfn << 12) | ((size_t)vaddr & 0xFFFULL);
+  int fd = open("/proc/self/pagemap", O_RDONLY);
+  if (fd == -1) {
+    perror("get_physical_address: Could not open /proc/self/pagemap. Are you "
+           "missing permissions?");
+    exit(1);
+  }
+  uint64_t virtual_addr = (uint64_t)vaddr;
+  size_t pme = 0;
+  off_t offset = (virtual_addr / 4096) * sizeof(pme);
+  int got = pread(fd, &pme, sizeof(pme), offset);
+  uint64_t pfn = get_frame_number_from_pme(pme);
+  if (got != sizeof(pme) || pfn == 0) {
+    printf("get_physical_address:\n");
+    printf("Got physical frame number %ld while translating virtual address "
+           "0x%lx. Got %d bytes from reading /proc/self/pagemap.\n",
+           pfn, virtual_addr, got);
+    printf("You probably don't have permissions to read /proc/self/pagemap. "
+           "Try using sudo/root.\n");
+    exit(1);
+  }
+  // The page should be present
+  assert(pme & (1ULL << 63));
+  close(fd);
+  return (pfn << 12) | ((size_t)vaddr & 0xFFFULL);
 }
 
 #endif

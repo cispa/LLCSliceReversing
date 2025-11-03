@@ -7,15 +7,16 @@
 #define SPECTRE_MODULE_IOCTL_MAGIC_NUMBER (long)0x325123
 
 struct spectre_gadget_params {
-    uint64_t offset;
-    uint8_t* user_buf;
-    int bit;
+  uint64_t offset;
+  uint8_t *user_buf;
+  int bit;
 };
 
 // execute the gadget with given offset and buffer base
-#define CMD_GADGET _IOR(SPECTRE_MODULE_IOCTL_MAGIC_NUMBER,  1, struct spectre_gadget_params*)
+#define CMD_GADGET                                                             \
+  _IOR(SPECTRE_MODULE_IOCTL_MAGIC_NUMBER, 1, struct spectre_gadget_params *)
 
 // allocate new buffer and return physical addresses
-#define CMD_INFO  _IOR(SPECTRE_MODULE_IOCTL_MAGIC_NUMBER,  2, uint64_t*)
+#define CMD_INFO _IOR(SPECTRE_MODULE_IOCTL_MAGIC_NUMBER, 2, uint64_t *)
 
 #endif /* _SPECTRE_MODULE_H */
