@@ -11,8 +11,9 @@
 
 #include "cacheutils.h"
 
-#define XEON
-#include "functions.h"
+#include "../slice_functions/slice_functions.h"
+
+#define SLICES 18
 
 // more encryptions show features more clearly
 #define NUMBER_OF_ENCRYPTIONS_VISUAL 1000
@@ -48,12 +49,12 @@ void evict(size_t *set, int len) {
 
 void build_eviction_set(size_t *evset, int len, size_t phys_target) {
   int target_set = get_set(phys_target);
-  int target_slice = compute_slice(phys_target);
+  int target_slice = compute_slice(phys_target, SLICES);
   int evcnt = 0;
   size_t candidate = (size_t)eviction + ((target_set << 6) % 4096) + 4096 * 8;
   while (evcnt < len && candidate < (size_t)eviction + EV_BUFFER) {
     size_t p = get_physical_address(candidate);
-    if (get_set(p) == target_set && compute_slice(p) == target_slice) {
+    if (get_set(p) == target_set && compute_slice(p, SLICES) == target_slice) {
       evset[evcnt++] = candidate;
     }
     candidate += 4096;
