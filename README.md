@@ -13,6 +13,7 @@ In our 3 case studies we show that physical address information is useful to per
 
 ### Reverse Engineering
 We show how to reverse enigneer non-linear CPU chache-slice functions in an efficient manner. The key idea here is to first focus on one part of the function, the non-linear mixer. After the mixer is recovered it is easy to extend the function to be valid for the complete physical address space.
+- `detect_function`: Detect the non-linear cache-slice function used by the current processor
 - `measure_pattern`: Measure a slice-access pattern for a given memory region using performance counters.
 - `non_linear_solve`: Tools to reverse-engineer non-linear cache-slice functions
 - `slice_functions`: Slice function library with all obtained functions.
