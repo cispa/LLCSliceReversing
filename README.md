@@ -43,7 +43,7 @@ And our artifacts as:
 ```bibtex
 @misc{Rainer2025RapidArtifacts,
  author={Rainer, Mikka and Hetterich, Lorenz and Thomas, Fabian and Hornetz, Tristan and Trampert, Leon and Gerlach, Lukas and Schwarz, Michael},
- url = {https://github.com/cispa/TODO},
+ url = {https://github.com/cispa/LLCSliceReversing},
  title = {Rapid Reversing of Non-Linear CPU Cache Slice Functions: Unlocking Physical Address Leakage Artifact Repository},
  year = {2025}
 }
