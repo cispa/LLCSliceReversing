@@ -553,7 +553,7 @@ double calculate_mean(const std::vector<uint64_t> &vec) {
 void SliceTimingOracle::benchmark_cores() {
   int repetitions = 1000;
   std::vector<std::vector<uint64_t>> measurements(
-      20, std::vector<uint64_t>(repetitions, 0));
+      core_config.number_hyperthreads, std::vector<uint64_t>(repetitions, 0));
   for (size_t i = 0; i < repetitions; i++) {
     address_t rand_page = get_random_address(4096);
     void *addr = (void *)(rand_page.virtual_address);
@@ -571,14 +571,14 @@ void SliceTimingOracle::benchmark_cores() {
   }
   std::vector<uint64_t> p_cores;
   std::vector<uint64_t> e_cores;
-  for (size_t i = 0; i < 20; i++) {
+  for (size_t i = 0; i < core_config.number_hyperthreads; i++) {
     std::vector<uint64_t> measures = measurements[i];
     std::sort(measures.begin(), measures.end());
     uint64_t Q1 = findMedianSorted(measures, 0);
     uint64_t mean = calculate_mean(measures);
     std::cout << "Core " << i << "\tMedian: " << Q1 << " Mean: " << mean
               << std::endl;
-    if (i < 12) {
+    if (!core_config.is_offset_slice(i)) {
       p_cores.push_back(mean);
     } else {
       e_cores.push_back(mean);
