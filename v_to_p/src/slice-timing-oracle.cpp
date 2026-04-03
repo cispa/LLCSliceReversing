@@ -283,7 +283,7 @@ void SliceTimingOracle::record_timings(
       // measurements[c][i] = measurement;
       // Balance timings on efficiency cores with constant offset
       if (core_config.is_offset_slice(c)) {
-        measurement -= 100;
+        measurement += core_config.e_core_offset;
       }
       measurements[c][i] = measurement;
     }
@@ -557,7 +557,7 @@ void SliceTimingOracle::benchmark_cores() {
   for (size_t i = 0; i < repetitions; i++) {
     address_t rand_page = get_random_address(4096);
     void *addr = (void *)(rand_page.virtual_address);
-    for (size_t c = 0; c < 20; c++) {
+    for (size_t c = 0; c < core_config.number_hyperthreads; c++) {
       utils_pin_to_core(getpid(), c);
       asm volatile("movq (%0), %%rax\n" : : "r"(addr) : "rax");
       asm volatile("clflush 0(%0)\n" : : "c"(addr) : "rax");
